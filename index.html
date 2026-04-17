@@ -285,7 +285,36 @@
   .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
   .empty-state .emoji { font-size: 40px; display: block; margin-bottom: 12px; }
 
-  /* CONFIRM DIALOG */
+  /* SPLIT TYPE TOGGLE */
+  .split-type-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .split-type-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--card2); color: var(--muted); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; transition: all 0.15s; }
+  .split-type-btn.selected { border-color: var(--accent); background: rgba(240,192,64,0.12); color: var(--accent); }
+
+  /* CUSTOM SPLIT INPUTS */
+  .custom-split-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .custom-split-name { font-size: 13px; font-weight: 600; min-width: 70px; display: flex; align-items: center; gap: 6px; }
+  .custom-split-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .custom-split-input { flex: 1; background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  .custom-split-input:focus { border-color: var(--accent); }
+  .custom-split-total { font-size: 12px; color: var(--muted); margin-top: 4px; margin-bottom: 8px; }
+  .custom-split-total.mismatch { color: var(--accent2); }
+  .custom-split-total.match { color: var(--green); }
+
+  /* FEES ROW */
+  .fees-row { display: flex; gap: 10px; align-items: flex-start; }
+  .fees-row .form-group { flex: 1; margin-bottom: 16px; }
+  .fees-row label { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; line-height: 1.4; min-height: 28px; }
+  .fees-row input { width: 100%; }
+
+  /* TAX BREAKDOWN */
+  .tax-breakdown { background: var(--card2); border-radius: 12px; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .tax-breakdown-title { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; font-family: 'Syne', sans-serif; }
+  .tax-breakdown-row { display: flex; align-items: center; gap: 6px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
+  .tax-breakdown-row:last-child { border-bottom: none; padding-bottom: 0; margin-top: 2px; border-top: 1px solid var(--border); padding-top: 8px; }
+  .tax-breakdown-name { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; min-width: 64px; flex-shrink: 0; white-space: nowrap; }
+  .tax-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .tax-breakdown-parts { font-size: 10px; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tax-breakdown-final { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; white-space: nowrap; flex-shrink: 0; margin-left: 4px; }
   .confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; padding: 24px; }
   .confirm-overlay.open { display: flex; }
   .confirm-box { background: var(--card); border-radius: 20px; padding: 28px 24px 20px; width: 100%; max-width: 340px; border: 1px solid var(--border); animation: popIn 0.2s ease; }
@@ -406,8 +435,37 @@
       <div class="member-toggle-row" id="paidby-row"></div>
     </div>
     <div class="form-group">
-      <label>Split Between</label>
-      <div class="member-toggle-row" id="splitbetween-row"></div>
+      <label>Split Type</label>
+      <div class="split-type-row">
+        <button class="split-type-btn selected" id="split-type-equal" onclick="setSplitType('equal')">👥 Equal</button>
+        <button class="split-type-btn" id="split-type-custom" onclick="setSplitType('custom')">🧾 Custom Amount</button>
+      </div>
+    </div>
+    <!-- EQUAL SPLIT -->
+    <div id="equal-split-section">
+      <div class="form-group">
+        <label>Split Between</label>
+        <div class="member-toggle-row" id="splitbetween-row"></div>
+      </div>
+    </div>
+    <!-- CUSTOM SPLIT -->
+    <div id="custom-split-section" style="display:none">
+      <div class="form-group">
+        <label>Order Amount per Person</label>
+        <div id="custom-split-inputs"></div>
+        <div class="custom-split-total" id="custom-split-total">Enter amounts above</div>
+      </div>
+      <div class="fees-row">
+        <div class="form-group">
+          <label>Tax / Service<br><span style="font-weight:400;text-transform:none;letter-spacing:0">(proportional)</span></label>
+          <input type="number" id="exp-tax" placeholder="e.g. 18000" min="0" step="0.01" oninput="updateSharePreview()">
+        </div>
+        <div class="form-group">
+          <label>Admin Fee<br><span style="font-weight:400;text-transform:none;letter-spacing:0">(equal split)</span></label>
+          <input type="number" id="exp-admin" placeholder="e.g. 5000" min="0" step="0.01" oninput="updateSharePreview()">
+        </div>
+      </div>
+      <div class="tax-breakdown" id="tax-breakdown" style="display:none"></div>
     </div>
     <div class="share-preview" id="share-preview">Enter an amount to see your share.</div>
     <button class="btn-submit" onclick="saveExpense()">Save Expense</button>
@@ -461,9 +519,12 @@ function getTripExpenses(id) { return state.expenses.filter(e=>e.tripId===id); }
 
 // KEY FIX: my share = amount / splitBetween.length (only if I'm in the split)
 function getMyShare(expense, myName) {
+  if(expense.splitType==='custom' && expense.customAmounts) {
+    return expense.customAmounts[myName]||0;
+  }
   const splitters = expense.splitBetween||[];
   if(splitters.length===0) return expense.amount;
-  if(!splitters.includes(myName)) return 0; // I'm not in this split
+  if(!splitters.includes(myName)) return 0;
   return expense.amount / splitters.length;
 }
 
@@ -541,15 +602,17 @@ function expHTML(e, trip) {
   const cat = CATEGORIES.find(c=>c.id===e.category)||CATEGORIES[5];
   const members = trip.members||[];
   const splitNames = (e.splitBetween||[]).join(', ');
-  const perPerson = e.splitBetween&&e.splitBetween.length>0 ? e.amount/e.splitBetween.length : e.amount;
+  const isCustom = e.splitType==='custom' && e.customAmounts;
+  const perPerson = isCustom ? null : (e.splitBetween&&e.splitBetween.length>0 ? e.amount/e.splitBetween.length : e.amount);
+  const splitInfo = isCustom ? `Custom · Split: ${splitNames}` : `Split: ${splitNames}${perPerson?' · '+fmt(perPerson,trip.currency)+'/person':''}`;
   const myShare = getMyShare(e, trip.myName);
-  const iAmIn = (e.splitBetween||[]).includes(trip.myName);
+  const iAmIn = isCustom ? (e.customAmounts[trip.myName]||0)>0 : (e.splitBetween||[]).includes(trip.myName);
   return `<div class="expense-item">
     <div class="expense-icon" style="background:${cat.color}22">${cat.icon}</div>
     <div class="expense-info">
       <div class="expense-cat">${cat.label}</div>
       <div class="expense-note">${e.note||'—'}</div>
-      <div class="expense-split-info">Split: ${splitNames} · ${fmt(perPerson,trip.currency)}/person</div>
+      <div class="expense-split-info">${splitInfo}</div>
     </div>
     <div class="expense-right">
       <div class="expense-amount">${fmt(e.amount,trip.currency)}</div>
@@ -578,11 +641,22 @@ function computeBalances(trip) {
   const net = {};
   members.forEach(m=>net[m]=0);
   getTripExpenses(trip.id).forEach(e=>{
-    const payer=e.paidBy, splitters=e.splitBetween||[];
-    if(!payer||splitters.length===0) return;
-    const share=e.amount/splitters.length;
+    const payer=e.paidBy;
+    if(!payer) return;
     if(net[payer]!==undefined) net[payer]+=e.amount;
-    splitters.forEach(s=>{ if(net[s]!==undefined) net[s]-=share; });
+
+    if(e.splitType==='custom' && e.customAmounts) {
+      // custom: each person owes their specific amount
+      Object.entries(e.customAmounts).forEach(([m,amt])=>{
+        if(net[m]!==undefined) net[m]-=(amt||0);
+      });
+    } else {
+      // equal split
+      const splitters=e.splitBetween||[];
+      if(splitters.length===0) return;
+      const share=e.amount/splitters.length;
+      splitters.forEach(s=>{ if(net[s]!==undefined) net[s]-=share; });
+    }
   });
   return net;
 }
@@ -780,6 +854,17 @@ function saveTrip(){
 let selectedCategory='food';
 let selectedPaidBy=null;
 let selectedSplitBetween=[];
+let selectedSplitType='equal'; // 'equal' or 'custom'
+let customAmounts={}; // {memberName: amount}
+
+function setSplitType(type) {
+  selectedSplitType = type;
+  document.getElementById('split-type-equal').classList.toggle('selected', type==='equal');
+  document.getElementById('split-type-custom').classList.toggle('selected', type==='custom');
+  document.getElementById('equal-split-section').style.display = type==='equal' ? '' : 'none';
+  document.getElementById('custom-split-section').style.display = type==='custom' ? '' : 'none';
+  updateSharePreview();
+}
 
 function openAddExpenseModal(expenseId) {
   const trip=getActiveTrip();
@@ -789,28 +874,35 @@ function openAddExpenseModal(expenseId) {
   document.getElementById('expense-modal-title').textContent = expenseId ? 'Edit Expense ✏️' : 'Add Expense 💸';
 
   if(expenseId) {
-    // EDIT mode: pre-fill fields
     const exp = state.expenses.find(e=>e.id===expenseId);
     if(!exp) return;
     selectedCategory = exp.category;
     selectedPaidBy = exp.paidBy;
+    selectedSplitType = exp.splitType||'equal';
     selectedSplitBetween = [...(exp.splitBetween||[])];
+    customAmounts = exp.customAmounts ? {...exp.customAmounts} : {};
     document.getElementById('exp-amount').value = exp.amount;
     document.getElementById('exp-note').value = exp.note||'';
     document.getElementById('exp-date').value = exp.date;
   } else {
-    // NEW mode: defaults
     selectedCategory='food';
     selectedPaidBy=trip.myName||trip.members[0];
+    selectedSplitType='equal';
     selectedSplitBetween=[...trip.members];
+    customAmounts={};
+    trip.members.forEach(m => customAmounts[m]=0);
     document.getElementById('exp-amount').value='';
     document.getElementById('exp-note').value='';
     document.getElementById('exp-date').value=new Date().toISOString().slice(0,10);
+    document.getElementById('exp-tax').value='';
+    document.getElementById('exp-admin').value='';
   }
 
   renderCatGrid();
   renderPaidByRow(trip);
   renderSplitRow(trip);
+  renderCustomSplitInputs(trip);
+  setSplitType(selectedSplitType);
   updateSharePreview();
   document.getElementById('modal-expense').classList.add('open');
 }
@@ -833,14 +925,109 @@ function renderSplitRow(trip){
       <div class="dot" style="background:${memberColor(i)}"></div>${m}
     </button>`).join('');
 }
+function renderCustomSplitInputs(trip) {
+  const members = trip.members||[];
+  document.getElementById('custom-split-inputs').innerHTML = members.map((m,i)=>`
+    <div class="custom-split-row">
+      <div class="custom-split-name">
+        <div class="custom-split-dot" style="background:${memberColor(i)}"></div>${m}
+      </div>
+      <input class="custom-split-input" type="number" min="0" step="0.01"
+        placeholder="0" value="${customAmounts[m]||''}"
+        oninput="customAmounts['${m}']=parseFloat(this.value)||0;updateSharePreview()">
+    </div>`).join('');
+}
 function updateSharePreview(){
   const trip=getActiveTrip(); if(!trip) return;
-  const amount=parseFloat(document.getElementById('exp-amount').value)||0;
-  const n=selectedSplitBetween.length||1;
-  const myShare=selectedSplitBetween.includes(trip.myName)?amount/n:0;
   const el=document.getElementById('share-preview');
-  if(amount===0){el.innerHTML='Enter an amount to see your share.';return;}
-  el.innerHTML=`Your share: <strong>${fmt(myShare,trip.currency)}</strong> &nbsp;(${fmt(amount,trip.currency)} ÷ ${n} people)`;
+
+  if(selectedSplitType==='equal') {
+    const amount=parseFloat(document.getElementById('exp-amount').value)||0;
+    const n=selectedSplitBetween.length||1;
+    const myShare=selectedSplitBetween.includes(trip.myName)?amount/n:0;
+    if(amount===0){el.innerHTML='Enter an amount to see your share.';return;}
+    el.innerHTML=`Your share: <strong>${fmt(myShare,trip.currency)}</strong> &nbsp;(${fmt(amount,trip.currency)} ÷ ${n} people)`;
+  } else {
+    const totalBill = parseFloat(document.getElementById('exp-amount').value)||0;
+    const tax = parseFloat(document.getElementById('exp-tax').value)||0;
+    const adminFee = parseFloat(document.getElementById('exp-admin').value)||0;
+    const members = trip.members||[];
+    const orderTotal = Object.values(customAmounts).reduce((s,v)=>s+(v||0),0);
+    const activeMembers = members.filter(m=>(customAmounts[m]||0)>0);
+    const adminPerPerson = activeMembers.length>0 ? adminFee/activeMembers.length : 0;
+
+    // compute final amounts
+    const finalAmounts = {};
+    members.forEach(m => {
+      const order = customAmounts[m]||0;
+      if(order===0 && adminFee===0) { finalAmounts[m]=0; return; }
+      const taxShare = orderTotal>0 ? (order/orderTotal)*tax : 0;
+      const adminShare = order>0 ? adminPerPerson : 0;
+      finalAmounts[m] = order + taxShare + adminShare;
+    });
+    const computedTotal = Object.values(finalAmounts).reduce((s,v)=>s+v,0);
+
+    // show breakdown
+    const taxBreakdownEl = document.getElementById('tax-breakdown');
+    const totalEl = document.getElementById('custom-split-total');
+
+    if((tax>0||adminFee>0) && orderTotal>0) {
+      taxBreakdownEl.style.display='';
+      taxBreakdownEl.innerHTML=`
+        <div class="tax-breakdown-title">Final breakdown per person</div>
+        ${members.map((m,i)=>{
+          const order=customAmounts[m]||0;
+          if(order===0) return '';
+          const taxShare=orderTotal>0?(order/orderTotal)*tax:0;
+          const adminShare=adminPerPerson;
+          const final=order+taxShare+adminShare;
+          const compact = n => {
+            if(n>=1000000) return 'Rp'+(n/1000000).toFixed(1)+'jt';
+            if(n>=1000) return 'Rp'+(n/1000).toFixed(0)+'K';
+            return 'Rp'+Math.round(n);
+          };
+          const parts=[];
+          parts.push(compact(order));
+          if(tax>0) parts.push(`+${compact(taxShare)} tax`);
+          if(adminFee>0) parts.push(`+${compact(adminShare)} adm`);
+          return `<div class="tax-breakdown-row">
+            <div class="tax-breakdown-name"><div class="tax-dot" style="background:${memberColor(i)}"></div>${m}</div>
+            <div class="tax-breakdown-parts">${parts.join(' ')}</div>
+            <div class="tax-breakdown-final" style="color:${memberColor(i)}">${fmt(final,trip.currency)}</div>
+          </div>`;
+        }).join('')}
+        <div class="tax-breakdown-row">
+          <div class="tax-breakdown-name" style="color:var(--muted)">Total</div>
+          <div></div>
+          <div class="tax-breakdown-final" style="color:var(--accent)">${fmt(computedTotal,trip.currency)}</div>
+        </div>`;
+    } else {
+      taxBreakdownEl.style.display='none';
+    }
+
+    // validate
+    const expectedTotal = orderTotal + tax + adminFee;
+    const diff = Math.abs(expectedTotal - totalBill);
+    if(totalBill===0){el.innerHTML='Enter an amount to see your share.'; totalEl.innerHTML=''; return;}
+
+    const match = diff < 1;
+    totalEl.className = 'custom-split-total '+(match?'match':'mismatch');
+    if(orderTotal===0) {
+      totalEl.innerHTML = 'Enter order amounts above';
+    } else {
+      const parts = [];
+      parts.push(`Orders ${fmt(orderTotal,trip.currency)}`);
+      if(tax>0) parts.push(`Tax ${fmt(tax,trip.currency)}`);
+      if(adminFee>0) parts.push(`Admin ${fmt(adminFee,trip.currency)}`);
+      totalEl.innerHTML = match
+        ? `✅ ${parts.join(' · ')} = ${fmt(expectedTotal,trip.currency)}`
+        : `⚠️ ${parts.join(' · ')} = ${fmt(expectedTotal,trip.currency)} · Bill is ${fmt(totalBill,trip.currency)} · Diff ${fmt(diff,trip.currency)}`;
+    }
+
+    const myShare = finalAmounts[trip.myName]||0;
+    const hasFees = tax>0||adminFee>0;
+    el.innerHTML=`Your share: <strong>${fmt(myShare,trip.currency)}</strong>${hasFees?' (incl. fees)':''}`;
+  }
 }
 function selectCat(id){selectedCategory=id;renderCatGrid();}
 function selectPaidBy(name){
@@ -864,17 +1051,48 @@ function saveExpense(){
   const date=document.getElementById('exp-date').value;
   if(!amount||isNaN(amount)){alert('Please enter an amount.');return;}
   if(!selectedPaidBy){alert('Please select who paid.');return;}
-  if(selectedSplitBetween.length===0){alert('Please select who to split with.');return;}
+
+  let splitBetween, customAmountsFinal, splitType;
+
+  if(selectedSplitType==='equal') {
+    if(selectedSplitBetween.length===0){alert('Please select who to split with.');return;}
+    splitBetween = [...selectedSplitBetween];
+    customAmountsFinal = null;
+    splitType = 'equal';
+  } else {
+    // custom split — compute final amounts with tax + admin fee
+    const tax = parseFloat(document.getElementById('exp-tax').value)||0;
+    const adminFee = parseFloat(document.getElementById('exp-admin').value)||0;
+    const orderTotal = Object.values(customAmounts).reduce((s,v)=>s+(v||0),0);
+    const activeMembers = Object.keys(customAmounts).filter(m=>(customAmounts[m]||0)>0);
+    const adminPerPerson = activeMembers.length>0 ? adminFee/activeMembers.length : 0;
+    const expectedTotal = orderTotal + tax + adminFee;
+    const diff = Math.abs(expectedTotal - amount);
+    if(diff >= 1){
+      alert(`Orders (${orderTotal}) + Tax (${tax}) + Admin (${adminFee}) = ${expectedTotal} must equal total bill (${amount}). Difference: ${Math.round(diff)}`);
+      return;
+    }
+    // build final amounts
+    const finalAmounts = {};
+    Object.keys(customAmounts).forEach(m => {
+      const order = customAmounts[m]||0;
+      if(order===0) return;
+      const taxShare = orderTotal>0 ? (order/orderTotal)*tax : 0;
+      const adminShare = adminPerPerson;
+      finalAmounts[m] = Math.round((order + taxShare + adminShare) * 100) / 100;
+    });
+    splitBetween = Object.keys(finalAmounts).filter(m=>(finalAmounts[m]||0)>0);
+    customAmountsFinal = finalAmounts;
+    splitType = 'custom';
+  }
+
+  const expData = {category:selectedCategory, amount, note, date, paidBy:selectedPaidBy, splitBetween, splitType, customAmounts:customAmountsFinal};
 
   if(editingExpenseId) {
-    // UPDATE existing
     const idx=state.expenses.findIndex(e=>e.id===editingExpenseId);
-    if(idx>-1){
-      state.expenses[idx]={...state.expenses[idx],category:selectedCategory,amount,note,date,paidBy:selectedPaidBy,splitBetween:[...selectedSplitBetween]};
-    }
+    if(idx>-1) state.expenses[idx]={...state.expenses[idx],...expData};
   } else {
-    // CREATE new
-    state.expenses.push({id:uid(),tripId:state.activeTrip,category:selectedCategory,amount,note,date,paidBy:selectedPaidBy,splitBetween:[...selectedSplitBetween]});
+    state.expenses.push({id:uid(), tripId:state.activeTrip, ...expData});
   }
   save();closeModal('modal-expense');render();
 }
